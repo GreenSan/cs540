@@ -9,6 +9,8 @@ public class NaiveBayesClassifierImpl implements NaiveBayesClassifier {
 	Hashtable<String, Integer> HAM = new Hashtable<String, Integer>();
 	Integer SPAMCount = 0;
 	Integer HAMCount = 0;
+	Integer SPAMInstanceCount = 0;
+	Integer HAMInstanceCount = 0;
 	Integer vocabSize = 0;
 	/**
 	 * Trains the classifier with the provided training data and vocabulary size
@@ -16,9 +18,14 @@ public class NaiveBayesClassifierImpl implements NaiveBayesClassifier {
 	@Override
 	public void train(Instance[] trainingData, int v) {
 		vocabSize = v;
+		Integer count;
 		for (Instance instance : trainingData) {
+			if (instance.label == Label.SPAM){
+				SPAMInstanceCount++;
+			} else {
+				HAMInstanceCount++;
+			}
 			for (String word : instance.words) {
-				Integer count;
 				if (instance.label == Label.SPAM){
 					SPAMCount++;
 					count = SPAM.get(word);
@@ -48,10 +55,10 @@ public class NaiveBayesClassifierImpl implements NaiveBayesClassifier {
 	@Override
 	public double p_l(Label label) {
 		if (label == Label.SPAM){
-			return (double)SPAMCount/(double)(SPAMCount + HAMCount);
+			return (double)SPAMInstanceCount/(double)(SPAMInstanceCount + HAMInstanceCount);
 		}
 			
-		return (double)HAMCount/(double)(SPAMCount + HAMCount);
+		return (double)HAMInstanceCount/(double)(SPAMInstanceCount + HAMInstanceCount);
 	}
 
 	/**
@@ -72,7 +79,7 @@ public class NaiveBayesClassifierImpl implements NaiveBayesClassifier {
 		}
 		if (clv == null) { clv = 0; }
 		
-		return ((double)clv + delta)/(((double)vocabSize * delta) + size);
+		return ((double)clv + delta)/(double)(((double)vocabSize * delta) + size);
 	}
 	
 	/**
@@ -85,9 +92,9 @@ public class NaiveBayesClassifierImpl implements NaiveBayesClassifier {
 			result.log_prob_ham += Math.log10(p_w_given_l(word, Label.HAM));
 			result.log_prob_spam += Math.log10(p_w_given_l(word, Label.SPAM));
 		}
-		result.log_prob_ham = p_l(Label.HAM) + result.log_prob_ham;
-		result.log_prob_spam = p_l(Label.SPAM) + result.log_prob_spam;
-		if (result.log_prob_ham > result.log_prob_spam){
+		result.log_prob_ham = Math.log10(p_l(Label.HAM)) + result.log_prob_ham;
+		result.log_prob_spam = Math.log10(p_l(Label.SPAM)) + result.log_prob_spam;
+		if (result.log_prob_ham >= result.log_prob_spam){
 			result.label = Label.HAM;
 		} else {
 			result.label = Label.SPAM;

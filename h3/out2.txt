@@ -1,0 +1,6 @@
+HAM HAM
+Log probability of spam: -56.301112
+Log probability of ham: -11.154329
+SPAM SPAM
+Log probability of spam: -10.301069
+Log probability of ham: -55.414000
