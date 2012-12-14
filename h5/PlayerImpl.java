@@ -16,33 +16,33 @@ public class PlayerImpl extends Player {
 		Position[] pos = getLegalMoves(board, color);
 		if(pos.length == 0){ //If no moves
 			//Should this happen?
-			System.out.println("No moves");
+			//System.out.println("No moves");
 			return;
 		}
 		bestSoFar = pos[0];
-		int depth = 2;
+		int depth = 0;
 		while(true){
 			for (int i = 0; i < pos.length; i++) {
 				Position position = pos[i];
 				GameState state = makeMove(board, position, color);
 				visited(state.getBoard());
+				double newScore = MinMax(state.getBoard(), alpha, beta, color.opposite(), depth);
+				//System.out.println(newScore);
 				if(color == Color.WHITE){
-					double tmpAlpha = MinMax(state.getBoard(), alpha, beta, color.opposite(), depth);
-					if (tmpAlpha > alpha) {
-						alpha = tmpAlpha;
+					if (newScore > alpha) {
+						alpha = newScore;
 						bestSoFar = position;
-						System.out.println("updated");
+						//System.out.println("updated");
 					}
 				} else {
-					double tmpBeta = MinMax(state.getBoard(), alpha, beta, color.opposite(), depth);
-					if (tmpBeta < beta) {
-						beta = tmpBeta;
+					if (newScore < beta) {
+						beta = newScore;
 						bestSoFar = position;
-						System.out.println("updated");
+						//System.out.println("updated");
 					}
 				}
 			}
-			System.out.println(depth);
+			//System.out.println(depth);
 			depth++;
 		}
 	}
@@ -68,21 +68,27 @@ public class PlayerImpl extends Player {
 			Position position = l[i];
 			GameState state = makeMove(board, position, nextColor);
 			visited(state.getBoard());
+			double newScore = MinMax(state.getBoard(), alpha, beta, nextColor.opposite(), depth - 1);
 			if(nextColor == Color.WHITE){
-				double tmpAlpha = MinMax(state.getBoard(), alpha, beta, nextColor.opposite(), depth - 1);
-				if (tmpAlpha > alpha) {
-					alpha = tmpAlpha;
+				if (newScore > alpha) {
+					alpha = newScore;
+				}
+				if(alpha > beta){
+					return beta;
 				}
 			} else {
-				double tmpBeta = MinMax(state.getBoard(), alpha, beta, nextColor.opposite(), depth - 1);
-				if (tmpBeta < beta) {
-					beta = tmpBeta;
+				if (newScore< beta) {
+					beta = newScore;
+				}
+				if(alpha > beta){
+					return alpha;
 				}
 			}
-			if(alpha > beta){
-				return beta;
-			}
 		}
-		return alpha;
+		if(nextColor == Color.WHITE){
+			return alpha;
+		} else {
+			return beta;
+		}
 	}
 }
